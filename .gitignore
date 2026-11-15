@@ -24,3 +24,6 @@ env/
 # Système
 .DS_Store
 Thumbs.db
+
+# Configuration personnelle du serveur
+config/roles_autorises.txt

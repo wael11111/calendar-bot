@@ -1,0 +1,11 @@
+# Configuration des rôles autorisés à gérer tous les événements.
+#
+# Ajoute les identifiants des rôles, un par ligne.
+# Les lignes vides et les commentaires commençant par # sont ignorés.
+#
+# Pour récupérer un identifiant :
+# Active le mode développeur dans Discord,
+# puis clic droit sur un rôle > Copier l'identifiant.
+#
+# Exemple :
+# 123456789012345678
