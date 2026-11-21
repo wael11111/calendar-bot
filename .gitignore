@@ -27,3 +27,6 @@ Thumbs.db
 
 # Configuration personnelle du serveur
 config/roles_autorises.txt
+
+# Base de données SQLite
+events.db
