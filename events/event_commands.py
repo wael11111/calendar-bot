@@ -56,18 +56,50 @@ class Event(app_commands.Group):
         date: str,
         heure: str,
     ) -> None:
-        event = event_manager.create(
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "Cette commande doit être utilisée sur un serveur Discord.",
+                ephemeral=True,
+            )
+            return
+
+        # Création dans SQLite et dans le gestionnaire.
+        event = await event_manager.create(
+            db=self.bot.db,
+            guild_id=interaction.guild.id,
             lieu=lieu,
             date=date,
             heure=heure,
             organisateur_id=interaction.user.id,
         )
-        view = EventView(event)
-        await interaction.response.send_message(embed=event.to_embed(), view=view)
 
-        message = await interaction.original_response()
-        event.channel_id = message.channel.id
-        event.message_id = message.id
+        view = EventView(event)
+
+        try:
+            # Publication du message Discord.
+            await interaction.response.send_message(
+                embed=event.to_embed(),
+                view=view,
+            )
+
+            message = await interaction.original_response()
+
+            # Enregistrement des identifiants du message et du salon.
+            event.channel_id = message.channel.id
+            event.message_id = message.id
+
+            await self.bot.db.update_event_message(
+                event_id=event.id,
+                channel_id=event.channel_id,
+                message_id=event.message_id,
+            )
+
+        except Exception:
+            # En cas d'échec, on retire l'événement de la base
+            # et du gestionnaire.
+            await event_manager.delete(self.bot.db, event.id)
+            raise
 
     @app_commands.command(name="liste", description="Afficher les événements enregistrés")
     async def liste(self, interaction: discord.Interaction) -> None:

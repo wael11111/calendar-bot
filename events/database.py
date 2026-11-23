@@ -125,6 +125,59 @@ class Database:
 
         await self.connection.commit()
 
+    async def add_participant(
+        self,
+        event_id: int,
+        user_id: int,
+    ) -> None:
+        """Ajoute un participant à un événement."""
+
+        await self.connection.execute(
+            """
+            INSERT INTO participants (event_id, user_id)
+            VALUES (?, ?)
+            """,
+            (event_id, user_id),
+        )
+
+        await self.connection.commit()
+
+    async def remove_participant(
+        self,
+        event_id: int,
+        user_id: int,
+    ) -> None:
+        """Retire un participant d'un événement."""
+
+        await self.connection.execute(
+            """
+            DELETE FROM participants
+            WHERE event_id = ? AND user_id = ?
+            """,
+            (event_id, user_id),
+        )
+
+        await self.connection.commit()
+
+    async def get_participants(
+        self,
+        event_id: int,
+    ) -> list[int]:
+        """Récupère les IDs des participants d'un événement."""
+
+        cursor = await self.connection.execute(
+            """
+            SELECT user_id
+            FROM participants
+            WHERE event_id = ?
+            """,
+            (event_id,),
+        )
+
+        rows = await cursor.fetchall()
+
+        return [row["user_id"] for row in rows]
+
     async def close(self) -> None:
         """Ferme la connexion à la base de données."""
         if self.connection is not None:
