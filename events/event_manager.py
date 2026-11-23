@@ -2,30 +2,51 @@ from events.event_data import EventData
 
 
 class EventManager:
-    """Centralise les événements conservés en mémoire."""
-
-    def __init__(self) -> None:
+    def __init__(self):
         self.events: dict[int, EventData] = {}
-        self.next_id = 1
 
-    def create(self, lieu: str, date: str, heure: str, organisateur_id: int) -> EventData:
+    async def create(
+        self,
+        db,
+        guild_id: int,
+        lieu: str,
+        date: str,
+        heure: str,
+        organisateur_id: int,
+    ) -> EventData:
+
+        # Création dans la base et récupération de l'ID.
+        event_id = await db.create_event(
+            guild_id=guild_id,
+            organisateur_id=organisateur_id,
+            lieu=lieu,
+            date=date,
+            heure=heure,
+        )
+
+        # Création de l'objet Python correspondant.
         event = EventData(
-            event_id=self.next_id,
+            event_id=event_id,
             lieu=lieu,
             date=date,
             heure=heure,
             organisateur_id=organisateur_id,
         )
+
         self.events[event.id] = event
-        self.next_id += 1
+
         return event
 
     def get(self, event_id: int) -> EventData | None:
         return self.events.get(event_id)
 
-    def delete(self, event_id: int) -> EventData | None:
+    async def delete(self, db, event_id: int) -> EventData | None:
+
+        # Suppression dans la base.
+        await db.delete_event(event_id)
+
+        # Suppression en mémoire.
         return self.events.pop(event_id, None)
 
 
-# Une seule instance partagée par les commandes et les vues.
 event_manager = EventManager()
