@@ -38,7 +38,7 @@ class Event(app_commands.Group):
             if channel is None:
                 channel = await self.bot.fetch_channel(event.channel_id)
             message = await channel.fetch_message(event.message_id)
-            await message.edit(embed=event.to_embed(), view=EventView(event))
+            await message.edit(embed=event.to_embed(), view= EventView(event, self.bot.db))
             return True
         except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             return False
@@ -74,7 +74,7 @@ class Event(app_commands.Group):
             organisateur_id=interaction.user.id,
         )
 
-        view = EventView(event)
+        view =  EventView(event, self.bot.db)
 
         try:
             # Publication du message Discord.
